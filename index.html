@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <meta name="description" content="Jira Assistant Enterprise v4.0 - IA com NLP Avançado, Criação de Tickets e Teams Integration"/>
+  <meta name="theme-color" content="#0078d4"/>
+  <title>Jira Assistant Enterprise v4.0 - Teams Professional</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer"/>
+
+  <style>
+    * { box-sizing: border-box; }
+
+    :root {
+      --primary-color: #0078d4;
+      --primary-light: #1084d7;
+      --primary-dark: #005a9e;
+      --teams-blue: #0078d4;
+      --teams-light: #e7f3ff;
+      --success-color: #10b981;
+      --success-light: #34d399;
+      --warning-color: #f59e0b;
+      --warning-light: #fbbf24;
+      --danger-color: #ef4444;
+      --danger-light: #f87171;
+      --info-color: #3b82f6;
+      --info-light: #60a5fa;
+      --bg-dark: #0f172a;
+      --bg-darker: #0a0f1a;
+      --surface: #1e293b;
+      --surface-light: #334155;
+      --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      --transition-fast: all 0.15s ease-out;
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+      --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+      --gradient-primary: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
+      --gradient-success: linear-gradient(135deg, var(--success-color) 0%, var(--success-light) 100%);
+      --gradient-warning: linear-gradient(135deg, var(--warning-color) 0%, var(--warning-light) 100%);
+      --gradient-danger: linear-gradient(135deg, var(--danger-color) 0%, var(--danger-light) 100%);
+    }
+
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Segoe UI', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+
+    .gradient-primary { background: var(--gradient-primary); }
+    .gradient-success { background: var(--gradient-success); }
+    .gradient-warning { background: var(--gradient-warning); }
+    .gradient-danger { background: var(--gradient-danger); }
+
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes slideInRight { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+    @keyframes slideInLeft { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
+    @keyframes bounce-wave { 0%, 60%, 100% { transform: translateY(0); opacity: 0.7; } 30% { transform: translateY(-8px); opacity: 1; } }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+    @keyframes scale-in { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+
+    .message { animation: fadeInUp 0.4s ease-out; }
+    .message-user { animation: slideInRight 0.3s ease-out; }
+    .message-bot { animation: slideInLeft 0.3s ease-out; }
+
+    .msg-user-bubble {
+      background: var(--gradient-primary);
+      box-shadow: var(--shadow-lg);
+      border-radius: 18px 18px 4px 18px;
+    }
+
+    .msg-bot-bubble {
+      background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+      box-shadow: var(--shadow-md);
+      border-radius: 18px 18px 18px 4px;
+      border-left: 4px solid var(--primary-color);
+    }
+
+    .msg-system {
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(168, 85, 247, 0.1) 100%);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      border-radius: 12px;
+      padding: 12px 16px;
+      font-size: 0.875rem;
+      font-style: italic;
+      color: #475569;
+    }
+
+    .msg-comment {
+      background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(52, 211, 153, 0.1) 100%);
+      border-left: 4px solid var(--success-color);
+      border-radius: 8px;
+      padding: 12px;
+    }
+
+    .typing-indicator {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .typing-indicator span {
+      height: 8px;
+      width: 8px;
+      background: var(--primary-color);
+      border-radius: 50%;
+      animation: bounce-wave 1.4s infinite;
+    }
+
+    .typing-indicator span:nth-child(1) { animation-delay: 0s; }
+    .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+    .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+
+    .badge {
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 9999px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      box-shadow: var(--shadow-sm);
+      transition: var(--transition);
+    }
+
+    .badge:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+
+    .badge-success { background: linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(52, 211, 153, 0.2) 100%); color: var(--success-color); border: 1px solid var(--success-color); }
+    .badge-warning { background: linear-gradient(135deg, rgba(245, 158, 11, 0.2) 0%, rgba(251, 191, 36, 0.2) 100%); color: var(--warning-color); border: 1px solid var(--warning-color); }
+    .badge-danger { background: linear-gradient(135deg, rgba(239, 68, 68, 0.2) 0%, rgba(248, 113, 113, 0.2) 100%); color: var(--danger-color); border: 1px solid var(--danger-color); }
+    .badge-info { background: linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(96, 165, 250, 0.2) 100%); color: var(--info-color); border: 1px solid var(--info-color); }
+
+    .card-dark { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border: 1px solid #334155; color: #e2e8f0; border-radius: 12px; transition: var(--transition); box-shadow: var(--shadow-md); }
+    .card-dark:hover { border-color: var(--primary-color); box-shadow: 0 0 30px rgba(91, 95, 199, 0.2); transform: translateY(-2px); }
+
+    .btn-icon { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(91, 95, 199, 0.1); color: var(--primary-color); border: none; font-size: 18px; cursor: pointer; transition: var(--transition); }
+    .btn-icon:hover { background: rgba(91, 95, 199, 0.2); transform: scale(1.05); }
+
+    .btn-primary { background: var(--gradient-primary); color: white; padding: 10px 16px; border-radius: 8px; border: none; font-weight: 600; box-shadow: var(--shadow-md); cursor: pointer; transition: var(--transition); }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+
+    .btn-secondary { background: rgba(91, 95, 199, 0.1); color: var(--primary-color); border: 2px solid var(--primary-color); padding: 8px 14px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: var(--transition); }
+    .btn-secondary:hover { background: rgba(91, 95, 199, 0.2); }
+
+    .tab-btn { background: transparent; color: rgba(255, 255, 255, 0.6); font-weight: 600; cursor: pointer; transition: var(--transition); }
+    .tab-btn.active { background: rgba(91, 95, 199, 0.3); color: white; }
+
+    .status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; animation: pulse 2s ease-in-out infinite; }
+    .status-dot.online { background: var(--success-color); box-shadow: 0 0 8px var(--success-color); }
+    .status-dot.offline { background: var(--danger-color); animation: none; }
+    .status-dot.idle { background: var(--warning-color); }
+
+    input, textarea, select { transition: var(--transition); font-family: inherit; }
+    input:focus, textarea:focus, select:focus { box-shadow: 0 0 0 3px rgba(91, 95, 199, 0.2); border-color: var(--primary-color); }
+
+    .spinner { width: 20px; height: 20px; border: 3px solid rgba(91, 95, 199, 0.2); border-top-color: var(--primary-color); border-radius: 50%; animation: spin 0.8s linear infinite; }
+
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(100, 116, 139, 0.5); border-radius: 3px; transition: var(--transition); }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(100, 116, 139, 0.8); }
+
+    @media (max-width: 768px) {
+      .chat-section { width: 100% !important; border-right: none !important; }
+      .jira-section { display: none !important; }
+      .dashboard-section { display: none !important; }
+    }
+
+    .hidden { display: none !important; }
+  </style>
+</head>
+
+<body class="bg-slate-900 h-screen overflow-hidden">
+
+<div class="h-screen flex flex-col" role="application" aria-label="Jira Assistant Enterprise">
+
+  <!-- HEADER -->
+  <header class="h-16 gradient-primary flex items-center justify-between px-6 text-white shadow-2xl" role="banner">
+    <div class="flex items-center gap-4">
+      <div class="p-2 bg-white/25 rounded-lg backdrop-blur-xl hover:bg-white/35 transition"><i class="fa-brands fa-microsoft text-2xl"></i></div>
+      <div>
+        <h1 class="font-bold text-lg">Microsoft Teams + Jira</h1>
+        <p class="text-xs text-white/70">Enterprise AI Assistant v4.0</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-4">
+      <div class="hidden sm:flex items-center gap-2 bg-white/15 px-4 py-2 rounded-lg backdrop-blur-xl">
+        <span class="status-dot online"></span>
+        <span class="text-sm font-semibold">Online</span>
+      </div>
+      <div class="hidden md:block text-right text-sm">
+        <p class="font-semibold">Biopark Team</p>
+        <p class="text-xs text-white/70">Session: <span id="session-time">00:00</span></p>
+      </div>
+      <div class="h-10 w-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center font-bold text-sm text-white shadow-lg hover:shadow-xl transition">AI</div>
+      <button id="theme-toggle" type="button" class="btn-icon" aria-label="Alternar tema" title="Alternar tema (Ctrl+T)"><i class="fa-solid fa-moon"></i></button>
+    </div>
+  </header>
+
+  <!-- MAIN -->
+  <main class="flex flex-1 overflow-hidden">
+
+    <!-- SIDEBAR ASSIGNEES -->
+    <aside class="hidden lg:flex flex-col w-64 bg-gradient-to-b from-slate-100 to-slate-50 border-r border-slate-300 overflow-y-auto">
+      <div class="p-4 border-b">
+        <h3 class="font-bold text-sm text-slate-800 flex items-center gap-2">
+          👥 Minha Equipe
+        </h3>
+        <input type="text" id="assignee-search" placeholder="Filtrar pessoas..." class="mt-3 w-full text-xs px-3 py-2 border rounded-lg border-slate-300 outline-none focus:border-blue-500"/>
+      </div>
+      <div id="assignee-list" class="flex-1 p-3 space-y-2 text-sm">
+        <!-- Populated by JS -->
+      </div>
+      <button type="button" onclick="app.showNewTicketForm()" class="m-3 w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white py-3 rounded-lg font-semibold hover:shadow-lg transition flex items-center justify-center gap-2">
+        <i class="fa-solid fa-plus"></i> Novo Ticket
+      </button>
+    </aside>
+
+    <!-- CHAT -->
+    <section class="w-full md:w-[40%] flex flex-col bg-gradient-to-b from-stone-50 to-stone-100 border-r border-slate-300 chat-section">
+
+      <!-- TOP -->
+      <div class="bg-white border-b shadow-md p-4 flex justify-between items-center gap-4">
+        <div>
+          <h2 class="font-bold text-gray-800 text-lg flex items-center gap-2">🤖 Jira Assistant</h2>
+          <p class="text-xs text-green-600 font-semibold flex items-center gap-1 mt-1"><span class="status-dot online"></span>Pronto para ajudar</p>
+        </div>
+        <div class="flex gap-2 flex-wrap justify-end">
+          <button type="button" id="search-btn" class="btn-icon" aria-label="Buscar" title="Buscar (Ctrl+F)"><i class="fa-solid fa-search"></i></button>
+          <button type="button" onclick="app.resumoDiario()" class="bg-gradient-to-r from-indigo-100 to-purple-100 text-indigo-700 px-3 py-2 rounded text-xs font-semibold hover:shadow-md transition">📋 Resumo</button>
+          <button id="clear-chat" type="button" class="btn-icon" aria-label="Limpar chat" title="Limpar histórico"><i class="fa-solid fa-trash"></i></button>
+        </div>
+      </div>
+
+      <!-- SEARCH BOX -->
+      <div id="search-box" class="hidden bg-white border-b p-3 shadow-sm">
+        <input id="search-input" type="text" placeholder="Buscar mensagens..." class="w-full border rounded-lg px-4 py-2 text-sm outline-none border-gray-300" aria-label="Buscar"/>
+      </div>
+
+      <!-- CHAT FEED -->
+      <div id="chat-feed" class="flex-1 overflow-y-auto p-5 space-y-4 bg-gradient-to-b from-transparent to-stone-50/50" role="log" aria-label="Histórico de mensagens" aria-live="polite">
+        <div class="flex gap-3 message message-bot">
+          <div class="h-12 w-12 rounded-full gradient-primary text-white flex items-center justify-center flex-shrink-0 shadow-lg" role="img" aria-label="Avatar do bot"><i class="fa-solid fa-robot"></i></div>
+          <div class="msg-bot-bubble p-4 max-w-[80%]">
+            <h3 class="font-bold text-sm text-blue-700">Jira Assistant Enterprise v4.0</h3>
+            <p class="text-sm text-gray-700 mt-2">Olá! 👋 Sou seu assistente IA avançado. Com linguagem natural, posso criar tickets, gerenciar tarefas e filtrar por pessoa.</p>
+            <div class="mt-4 bg-blue-50 border border-blue-200 p-3 rounded-lg space-y-2">
+              <p class="text-xs font-bold text-blue-700">✨ Experimente:</p>
+              <ul class="text-xs text-gray-700 space-y-1">
+                <li>💬 "Meus tickets" - suas atribuições</li>
+                <li>👤 "Tickets do João" - de uma pessoa</li>
+                <li>🎫 "Criar novo" - novo ticket</li>
+                <li>⚠️ "Atrasados" - problemas urgentes</li>
+                <li>📊 "Resumo" - relatório geral</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DIGITANDO -->
+      <div id="typing" class="hidden px-5 py-3" role="status" aria-label="Bot está digitando">
+        <div class="bg-white rounded-full px-4 py-2 inline-flex typing-indicator shadow-md"><span></span><span></span><span></span></div>
+      </div>
+
+      <!-- INPUT -->
+      <div class="bg-white border-t p-4 shadow-2xl">
+        <form onsubmit="app.enviarMensagem(event)" class="flex gap-3" aria-label="Enviar mensagem">
+          <button type="button" id="attach-btn" class="btn-icon flex-shrink-0" aria-label="Anexar"><i class="fa-solid fa-paperclip"></i></button>
+          <input id="input" type="text" placeholder='Ex: "Meus tickets", "Tickets do João", "Criar novo", ou "PROJ-101"' class="flex-1 border rounded-lg px-4 py-3 text-sm outline-none border-gray-300 focus:border-blue-500" aria-label="Mensagem" autocomplete="off"/>
+          <button type="submit" class="btn-primary flex-shrink-0 px-6 rounded-lg" aria-label="Enviar"><i class="fa-solid fa-paper-plane"></i></button>
+        </form>
+      </div>
+
+    </section>
+
+    <!-- JIRA BOARD -->
+    <section class="w-full md:w-[40%] bg-gradient-to-b from-slate-900 to-slate-950 p-5 overflow-y-auto jira-section border-slate-800" role="region" aria-label="Board Jira">
+
+      <div class="flex gap-2 mb-6 flex-wrap">
+        <select id="filter-project" class="bg-slate-800 text-white text-xs px-3 py-2 rounded-lg border border-slate-700" aria-label="Filtrar projeto">
+          <option value="">📁 Projeto</option>
+          <option value="PROJ">PROJ - Principal</option>
+          <option value="CARM">CARM - Carmnha</option>
+          <option value="DEV">DEV - Desenvolvimento</option>
+          <option value="QA">QA - Qualidade</option>
+        </select>
+        <select id="filter-status" class="bg-slate-800 text-white text-xs px-3 py-2 rounded-lg border border-slate-700" aria-label="Filtrar status">
+          <option value="">⏳ Status</option>
+          <option value="todo">To Do</option>
+          <option value="in-progress">In Progress</option>
+          <option value="done">Done</option>
+        </select>
+        <select id="filter-priority" class="bg-slate-800 text-white text-xs px-3 py-2 rounded-lg border border-slate-700" aria-label="Filtrar prioridade">
+          <option value="">🎯 Prioridade</option>
+          <option value="high">🔴 Alta</option>
+          <option value="medium">🟡 Média</option>
+          <option value="low">🟢 Baixa</option>
+        </select>
+      </div>
+
+      <div class="grid grid-cols-3 gap-4" role="main">
+
+        <!-- TO DO -->
+        <div class="card-dark rounded-lg p-4">
+          <div class="flex justify-between mb-4">
+            <h3 class="text-white font-bold text-sm">📋 Pendência</h3>
+            <span class="badge badge-danger"><span id="count-todo">3</span></span>
+          </div>
+          <div class="space-y-3" id="column-todo">
+            <div class="bg-slate-700 rounded-lg p-3 hover:bg-slate-600 cursor-pointer border-l-4 border-red-500" onclick="app.selectTicket('PROJ-101')">
+              <div class="flex justify-between"><span class="text-xs text-indigo-300 font-bold">PROJ-101</span><span class="badge badge-danger text-xs">⚠ 3d</span></div>
+              <p class="text-white text-sm mt-2">Integração Teams</p>
+            </div>
+            <div class="bg-slate-700 rounded-lg p-3 hover:bg-slate-600 cursor-pointer border-l-4 border-orange-500" onclick="app.selectTicket('PROJ-102')">
+              <div class="flex justify-between"><span class="text-xs text-indigo-300 font-bold">PROJ-102</span><span class="badge badge-warning text-xs">⚠ 1d</span></div>
+              <p class="text-white text-sm mt-2">Autenticação LDAP</p>
+            </div>
+            <div class="bg-slate-700 rounded-lg p-3 hover:bg-slate-600 cursor-pointer border-l-4 border-red-500" onclick="app.selectTicket('CARM-145')">
+              <div class="flex justify-between"><span class="text-xs text-purple-300 font-bold">CARM-145</span><span class="badge badge-danger text-xs">⚠ 5d</span></div>
+              <p class="text-white text-sm mt-2">Relatório Analytics</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- IN PROGRESS -->
+        <div class="card-dark rounded-lg p-4">
+          <div class="flex justify-between mb-4">
+            <h3 class="text-white font-bold text-sm">⚙️ Processo</h3>
+            <span class="badge badge-info"><span id="count-in-progress">5</span></span>
+          </div>
+          <div class="space-y-3" id="column-in-progress">
+            <div class="bg-slate-700 rounded-lg p-3 hover:bg-slate-600 cursor-pointer border-l-4 border-blue-500" onclick="app.selectTicket('PROJ-99')">
+              <div class="flex justify-between"><span class="text-xs text-amber-300 font-bold">PROJ-99</span><span class="badge badge-info text-xs">🟡</span></div>
+              <p class="text-white text-sm mt-2">Ajustar Login Azure</p>
+            </div>
+            <div class="bg-slate-700 rounded-lg p-3 hover:bg-slate-600 cursor-pointer border-l-4 border-blue-500" onclick="app.selectTicket('DEV-201')">
+              <div class="flex justify-between"><span class="text-xs text-amber-300 font-bold">DEV-201</span><span class="badge badge-info text-xs">🟢</span></div>
+              <p class="text-white text-sm mt-2">Testes Unitários</p>
+            </div>
+            <div class="bg-slate-700 rounded-lg p-3 hover:bg-slate-600 cursor-pointer border-l-4 border-blue-500" onclick="app.selectTicket('DEV-202')">
+              <div class="flex justify-between"><span class="text-xs text-amber-300 font-bold">DEV-202</span><span class="badge badge-info text-xs">🔴</span></div>
+              <p class="text-white text-sm mt-2">Refactoring Backend</p>
+            </div>
+            <div class="bg-slate-700 rounded-lg p-3 hover:bg-slate-600 cursor-pointer border-l-4 border-blue-500" onclick="app.selectTicket('DEV-203')">
+              <div class="flex justify-between"><span class="text-xs text-amber-300 font-bold">DEV-203</span><span class="badge badge-info text-xs">🟡</span></div>
+              <p class="text-white text-sm mt-2">Documentação API</p>
+            </div>
+            <div class="bg-slate-700 rounded-lg p-3 hover:bg-slate-600 cursor-pointer border-l-4 border-blue-500" onclick="app.selectTicket('QA-315')">
+              <div class="flex justify-between"><span class="text-xs text-amber-300 font-bold">QA-315</span><span class="badge badge-info text-xs">🔴</span></div>
+              <p class="text-white text-sm mt-2">Testes E2E</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- DONE -->
+        <div class="card-dark rounded-lg p-4">
+          <div class="flex justify-between mb-4">
+            <h3 class="text-white font-bold text-sm">✅ Concluído</h3>
+            <span class="badge badge-success"><span id="count-done">7</span></span>
+          </div>
+          <div class="space-y-2 text-xs" id="column-done">
+            <div class="bg-slate-700/50 rounded-lg p-2 border-l-4 border-green-500 opacity-75" onclick="app.selectTicket('PROJ-95')">
+              <div class="flex justify-between"><span class="text-green-300 font-bold">PROJ-95</span><span class="text-green-400">✔</span></div>
+              <p class="text-white">Dashboard</p>
+            </div>
+            <div class="bg-slate-700/50 rounded-lg p-2 border-l-4 border-green-500 opacity-75" onclick="app.selectTicket('PROJ-94')">
+              <div class="flex justify-between"><span class="text-green-300 font-bold">PROJ-94</span><span class="text-green-400">✔</span></div>
+              <p class="text-white">Database</p>
+            </div>
+            <div class="bg-slate-700/50 rounded-lg p-2 border-l-4 border-green-500 opacity-75" onclick="app.selectTicket('DEV-150')">
+              <div class="flex justify-between"><span class="text-green-300 font-bold">DEV-150</span><span class="text-green-400">✔</span></div>
+              <p class="text-white">Staging</p>
+            </div>
+            <div class="bg-slate-700/50 rounded-lg p-2 border-l-4 border-green-500 opacity-75" onclick="app.selectTicket('CARM-140')">
+              <div class="flex justify-between"><span class="text-green-300 font-bold">CARM-140</span><span class="text-green-400">✔</span></div>
+              <p class="text-white">CI/CD</p>
+            </div>
+            <div class="bg-slate-700/50 rounded-lg p-2 border-l-4 border-green-500 opacity-75" onclick="app.selectTicket('DEV-149')">
+              <div class="flex justify-between"><span class="text-green-300 font-bold">DEV-149</span><span class="text-green-400">✔</span></div>
+              <p class="text-white">Redis Cache</p>
+            </div>
+            <div class="bg-slate-700/50 rounded-lg p-2 border-l-4 border-green-500 opacity-75" onclick="app.selectTicket('QA-300')">
+              <div class="flex justify-between"><span class="text-green-300 font-bold">QA-300</span><span class="text-green-400">✔</span></div>
+              <p class="text-white">Smoke Tests</p>
+            </div>
+            <div class="bg-slate-700/50 rounded-lg p-2 border-l-4 border-green-500 opacity-75" onclick="app.selectTicket('PROJ-90')">
+              <div class="flex justify-between"><span class="text-green-300 font-bold">PROJ-90</span><span class="text-green-400">✔</span></div>
+              <p class="text-white">Security Audit</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- DASHBOARD -->
+    <section class="w-full md:w-[20%] bg-gradient-to-b from-slate-950 to-black border-l border-slate-800 p-4 overflow-y-auto dashboard-section hidden md:block" role="region" aria-label="Dashboard">
+
+      <div class="flex gap-1 mb-4 bg-slate-800 rounded-lg p-1">
+        <button type="button" class="tab-btn active flex-1 py-2 px-2 rounded text-xs" data-tab="metrics">📊 Métricas</button>
+        <button type="button" class="tab-btn flex-1 py-2 px-2 rounded text-xs" data-tab="history">🕘 Log</button>
+      </div>
+
+      <div id="tab-metrics" class="tab-content space-y-4">
+        <div class="card-dark rounded-lg p-3">
+          <h3 class="text-white font-bold text-xs mb-3">📊 Em Tempo Real</h3>
+          <div class="space-y-2 text-xs">
+            <div class="flex justify-between bg-slate-700 p-2 rounded">
+              <span class="text-slate-300">Total</span>
+              <span class="badge badge-info" id="metric-total">15</span>
+            </div>
+            <div class="flex justify-between bg-slate-700 p-2 rounded">
+              <span class="text-slate-300">Atrasados</span>
+              <span class="badge badge-danger" id="metric-atrasados">3</span>
+            </div>
+            <div class="flex justify-between bg-slate-700 p-2 rounded">
+              <span class="text-slate-300">Progresso</span>
+              <span class="badge badge-info" id="metric-in-progress">5</span>
+            </div>
+            <div class="flex justify-between bg-slate-700 p-2 rounded">
+              <span class="text-slate-300">Concluídos</span>
+              <span class="badge badge-success" id="metric-conclusao">7</span>
+            </div>
+            <div class="flex justify-between bg-slate-700 p-2 rounded">
+              <span class="text-slate-300">Taxa</span>
+              <span class="badge badge-success" id="metric-taxa">46.6%</span>
+            </div>
+          </div>
+        </div>
+        <div class="card-dark rounded-lg p-3">
+          <h3 class="text-white font-bold text-xs mb-3">📈 Distribuição</h3>
+          <div class="space-y-2 text-xs">
+            <div><div class="flex justify-between mb-1"><span class="text-green-400">Concluído</span><span>47%</span></div>
+              <div class="w-full h-2 bg-slate-700 rounded-full overflow-hidden"><div class="h-full bg-gradient-success" style="width: 47%"></div></div>
+            </div>
+            <div><div class="flex justify-between mb-1"><span class="text-blue-400">Progresso</span><span>33%</span></div>
+              <div class="w-full h-2 bg-slate-700 rounded-full overflow-hidden"><div class="h-full bg-gradient-primary" style="width: 33%"></div></div>
+            </div>
+            <div><div class="flex justify-between mb-1"><span class="text-red-400">Pendente</span><span>20%</span></div>
+              <div class="w-full h-2 bg-slate-700 rounded-full overflow-hidden"><div class="h-full bg-gradient-danger" style="width: 20%"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="tab-history" class="tab-content hidden">
+        <div class="card-dark rounded-lg p-3">
+          <h3 class="text-white font-bold text-xs mb-3">🕘 Histórico</h3>
+          <div id="historico" class="space-y-2 text-xs" role="log" aria-label="Histórico">
+            <div class="bg-slate-900 p-2 rounded text-slate-300 truncate border-l-2 border-indigo-500"><span class="text-slate-500">00:00</span> 🔍 PROJ-101</div>
+            <div class="bg-slate-900 p-2 rounded text-slate-300 truncate border-l-2 border-green-500"><span class="text-slate-500">00:05</span> ✅ Comentário</div>
+            <div class="bg-slate-900 p-2 rounded text-slate-300 truncate border-l-2 border-blue-500"><span class="text-slate-500">00:10</span> 📋 Resumo</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-dark rounded-lg p-3 mt-4">
+        <h3 class="text-white font-bold text-xs mb-2">⚡ Ações</h3>
+        <div class="space-y-2">
+          <button type="button" class="w-full btn-secondary text-xs py-2" onclick="app.exportarRelatorio()">📥 Exportar</button>
+          <button type="button" class="w-full btn-secondary text-xs py-2" onclick="app.notificacoes()">🔔 Alertas</button>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+</div>
+
+<!-- MODAL NOVO TICKET -->
+<div id="modal-new-ticket" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50" role="dialog" aria-label="Criar novo ticket">
+  <div class="bg-white rounded-lg shadow-2xl max-w-md w-full mx-4 p-6 animate-scale-in">
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="text-xl font-bold text-slate-800">🎫 Novo Ticket</h2>
+      <button type="button" onclick="app.closeNewTicketForm()" class="text-slate-500 hover:text-slate-700"><i class="fa-solid fa-times text-xl"></i></button>
+    </div>
+    <form onsubmit="app.createTicket(event)" class="space-y-4">
+      <div>
+        <label class="block text-sm font-semibold text-slate-700 mb-1">Projeto</label>
+        <select id="new-ticket-project" class="w-full border rounded-lg px-3 py-2 border-slate-300 focus:border-blue-500 outline-none" required>
+          <option value="PROJ">PROJ - Principal</option>
+          <option value="CARM">CARM - Carmnha</option>
+          <option value="DEV">DEV - Desenvolvimento</option>
+          <option value="QA">QA - Qualidade</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-sm font-semibold text-slate-700 mb-1">Título</label>
+        <input type="text" id="new-ticket-title" placeholder="Ex: Corrigir bug login" class="w-full border rounded-lg px-3 py-2 border-slate-300 focus:border-blue-500 outline-none" required/>
+      </div>
+      <div>
+        <label class="block text-sm font-semibold text-slate-700 mb-1">Descrição</label>
+        <textarea id="new-ticket-desc" placeholder="Descrever o ticket..." class="w-full border rounded-lg px-3 py-2 border-slate-300 focus:border-blue-500 outline-none text-sm" rows="3" required></textarea>
+      </div>
+      <div>
+        <label class="block text-sm font-semibold text-slate-700 mb-1">Atribuir a</label>
+        <select id="new-ticket-assignee" class="w-full border rounded-lg px-3 py-2 border-slate-300 focus:border-blue-500 outline-none" required>
+          <!-- Populated by JS -->
+        </select>
+      </div>
+      <div class="grid grid-cols-2 gap-2">
+        <div>
+          <label class="block text-sm font-semibold text-slate-700 mb-1">Prioridade</label>
+          <select id="new-ticket-priority" class="w-full border rounded-lg px-3 py-2 border-slate-300 focus:border-blue-500 outline-none">
+            <option value="Baixa">Baixa</option>
+            <option value="Média" selected>Média</option>
+            <option value="Alta">Alta</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-semibold text-slate-700 mb-1">Status</label>
+          <select id="new-ticket-status" class="w-full border rounded-lg px-3 py-2 border-slate-300 focus:border-blue-500 outline-none">
+            <option value="To Do" selected>To Do</option>
+            <option value="In Progress">In Progress</option>
+            <option value="Done">Done</option>
+          </select>
+        </div>
+      </div>
+      <div class="flex gap-2 pt-2">
+        <button type="button" onclick="app.closeNewTicketForm()" class="flex-1 py-2 rounded-lg border border-slate-300 text-slate-700 font-semibold hover:bg-slate-50">Cancelar</button>
+        <button type="submit" class="flex-1 py-2 rounded-lg bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold hover:shadow-lg transition">Criar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+
+const CONFIG = { API_TIMEOUT: 5000, TYPING_DELAY_MIN: 600, TYPING_DELAY_MAX: 1800, STORAGE_KEY: 'jira_v4', VERSION: '4.0' };
+
+class JiraAssistant {
+  constructor() {
+    this.apiOnline = true;
+    this.chatHistory = [];
+    this.selectedTicket = null;
+    this.comments = {};
+    this.startTime = new Date();
+    this.currentUser = 'Sistema';
+    this.filteredAssignee = null;
+    this.nextTicketNum = { PROJ: 200, CARM: 200, DEV: 300, QA: 400 };
+
+    this.assignees = [
+      { id: 1, name: 'Ana Silva', email: 'ana.silva@company.com', avatar: 'AS', tickets: [] },
+      { id: 2, name: 'João Santos', email: 'joao.santos@company.com', avatar: 'JS', tickets: [] },
+      { id: 3, name: 'Maria Costa', email: 'maria.costa@company.com', avatar: 'MC', tickets: [] },
+      { id: 4, name: 'Carlos Mendes', email: 'carlos.mendes@company.com', avatar: 'CM', tickets: [] },
+      { id: 5, name: 'Bruno Silva', email: 'bruno.silva@company.com', avatar: 'BS', tickets: [] },
+      { id: 6, name: 'Felipe Costa', email: 'felipe.costa@company.com', avatar: 'FC', tickets: [] },
+      { id: 7, name: 'Andreia Gomes', email: 'andreia.gomes@company.com', avatar: 'AG', tickets: [] },
+      { id: 8, name: 'Isabela Martins', email: 'isabela.martins@company.com', avatar: 'IM', tickets: [] },
+    ];
+
+    this.tickets = {
+      'PROJ-101': { status: 'To Do', assignee: 'Ana Silva', priority: 'Alta', delayed: 3, desc: 'Integração Microsoft Teams', comments: [] },
+      'PROJ-102': { status: 'To Do', assignee: 'João Santos', priority: 'Média', delayed: 1, desc: 'Implementar autenticação LDAP', comments: [] },
+      'PROJ-99': { status: 'In Progress', assignee: 'Maria Costa', priority: 'Média', delayed: 0, desc: 'Ajustar Login Azure', comments: [] },
+      'PROJ-95': { status: 'Done', assignee: 'João Santos', priority: 'Baixa', delayed: 0, desc: 'Dashboard concluído', comments: [] },
+      'CARM-145': { status: 'To Do', assignee: 'Carlos Mendes', priority: 'Alta', delayed: 5, desc: 'Relatório Analytics Avançado', comments: [] },
+      'CARM-140': { status: 'Done', assignee: 'Bruno Silva', priority: 'Média', delayed: 0, desc: 'Pipeline CI/CD Setup', comments: [] },
+      'DEV-201': { status: 'In Progress', assignee: 'Bruno Silva', priority: 'Baixa', delayed: 0, desc: 'Testes Unitários', comments: [] },
+      'DEV-202': { status: 'In Progress', assignee: 'Felipe Costa', priority: 'Alta', delayed: 0, desc: 'Refactoring Backend', comments: [] },
+      'DEV-203': { status: 'In Progress', assignee: 'Andreia Gomes', priority: 'Média', delayed: 0, desc: 'Documentação API REST', comments: [] },
+      'DEV-150': { status: 'Done', assignee: 'Bruno Silva', priority: 'Média', delayed: 0, desc: 'Setup Staging Environment', comments: [] },
+      'DEV-149': { status: 'Done', assignee: 'Maria Costa', priority: 'Baixa', delayed: 0, desc: 'Cache Redis Configuration', comments: [] },
+      'PROJ-94': { status: 'Done', assignee: 'Ana Silva', priority: 'Média', delayed: 0, desc: 'Schema Database Design', comments: [] },
+      'QA-315': { status: 'In Progress', assignee: 'Isabela Martins', priority: 'Alta', delayed: 0, desc: 'Testes E2E Completos', comments: [] },
+      'QA-300': { status: 'Done', assignee: 'Isabela Martins', priority: 'Média', delayed: 0, desc: 'Smoke Tests Suite', comments: [] },
+      'PROJ-90': { status: 'Done', assignee: 'Ana Silva', priority: 'Alta', delayed: 0, desc: 'Security Audit Final', comments: [] },
+    };
+
+    // Atualizar tickets dos assignees
+    Object.entries(this.tickets).forEach(([id, ticket]) => {
+      const assignee = this.assignees.find(a => a.name === ticket.assignee);
+      if (assignee) assignee.tickets.push(id);
+    });
+
+    this.init();
+  }
+
+  init() {
+    this.setupEventListeners();
+    this.startSessionTimer();
+    this.populateAssigneeList();
+    this.populateNewTicketForm();
+    this.logAction('🚀 Sistema inicializado v' + CONFIG.VERSION);
+    this.addBotMessage('🤖 <strong>IA Avançada Ativa!</strong><br>Use linguagem natural: "Meus tickets", "Tickets do João", "Criar novo...", "Atrasados", etc');
+  }
+
+  populateAssigneeList() {
+    const list = document.getElementById('assignee-list');
+    if (!list) return;
+    list.innerHTML = this.assignees.map(assignee => `
+      <div class="p-3 rounded-lg bg-white cursor-pointer hover:bg-blue-50 border border-transparent hover:border-blue-200 transition" onclick="app.filterByAssignee('${assignee.name}')">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 text-white flex items-center justify-center text-xs font-bold">${assignee.avatar}</div>
+          <div class="flex-1 min-w-0">
+            <p class="text-xs font-semibold text-slate-800">${assignee.name}</p>
+            <p class="text-xs text-slate-500 truncate">${assignee.tickets.length} tickets</p>
+          </div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  populateNewTicketForm() {
+    const select = document.getElementById('new-ticket-assignee');
+    if (!select) return;
+    select.innerHTML = this.assignees.map(a => `<option value="${a.name}">${a.name}</option>`).join('');
+  }
+
+  showNewTicketForm() {
+    document.getElementById('modal-new-ticket').classList.remove('hidden');
+  }
+
+  closeNewTicketForm() {
+    document.getElementById('modal-new-ticket').classList.add('hidden');
+  }
+
+  createTicket(event) {
+    event.preventDefault();
+    const project = document.getElementById('new-ticket-project').value;
+    const title = document.getElementById('new-ticket-title').value;
+    const desc = document.getElementById('new-ticket-desc').value;
+    const assignee = document.getElementById('new-ticket-assignee').value;
+    const priority = document.getElementById('new-ticket-priority').value;
+    const status = document.getElementById('new-ticket-status').value;
+
+    const ticketNum = this.nextTicketNum[project]++;
+    const ticketId = `${project}-${ticketNum}`;
+
+    this.tickets[ticketId] = { status, assignee, priority, delayed: 0, desc: title, comments: [] };
+    
+    const assigneeObj = this.assignees.find(a => a.name === assignee);
+    if (assigneeObj) assigneeObj.tickets.push(ticketId);
+
+    this.populateAssigneeList();
+    this.closeNewTicketForm();
+    this.addBotMessage(`✅ <strong>Ticket ${ticketId} criado com sucesso!</strong><br>"${title}" atribuído a ${assignee}`);
+    this.logAction(`🎫 ${ticketId} criado`);
+    document.getElementById('new-ticket-title').value = '';
+    document.getElementById('new-ticket-desc').value = '';
+  }
+
+  filterByAssignee(name) {
+    this.filteredAssignee = this.filteredAssignee === name ? null : name;
+    const tickets = this.filteredAssignee 
+      ? Object.entries(this.tickets).filter(([_, t]) => t.assignee === name)
+      : Object.entries(this.tickets);
+    
+    const msg = this.filteredAssignee 
+      ? `📋 <strong>${name}:</strong> ${tickets.length} tickets<br>${tickets.map(([id, _]) => `• ${id}`).join('<br>')}`
+      : `🔄 Filtro removido. Total: ${Object.keys(this.tickets).length} tickets`;
+    this.addBotMessage(msg);
+    this.logAction(`🔍 Filtro: ${this.filteredAssignee || 'Todos'}`);
+  }
+
+  startSessionTimer() {
+    setInterval(() => {
+      const elapsed = Math.floor((new Date() - this.startTime) / 60000);
+      document.getElementById('session-time').textContent = String(elapsed).padStart(2, '0') + ':00';
+    }, 60000);
+  }
+
+  setupEventListeners() {
+    document.getElementById('clear-chat')?.addEventListener('click', () => this.clearChat());
+    document.getElementById('theme-toggle')?.addEventListener('click', () => this.toggleTheme());
+    document.getElementById('search-btn')?.addEventListener('click', () => this.toggleSearch());
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => this.switchTab(e.target.dataset.tab));
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.ctrlKey && e.key === 'k') { e.preventDefault(); document.getElementById('input').focus(); }
+      if (e.ctrlKey && e.key === 'f') { e.preventDefault(); this.toggleSearch(); }
+    });
+  }
+
+  sanitize(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  validateInput(text) {
+    return text && typeof text === 'string' && text.trim().length > 0 && text.length <= 1000;
+  }
+
+  extractQuotedText(text) {
+    const match = text.match(/"([^"]*)"/);
+    return match ? match[1] : null;
+  }
+
+  extractTicketId(text) {
+    const match = text.match(/(PROJ-\d+|CARM-\d+|DEV-\d+|QA-\d+)/i);
+    return match ? match[0].toUpperCase() : null;
+  }
+
+  extractName(text) {
+    return this.assignees.find(a => text.toLowerCase().includes(a.name.toLowerCase()))?.name || null;
+  }
+
+  addUserMessage(text) {
+    if (!this.validateInput(text)) return false;
+    const sanitized = this.sanitize(text);
+    const chatFeed = document.getElementById('chat-feed');
+    const messageEl = document.createElement('div');
+    messageEl.className = 'flex justify-end message message-user';
+    messageEl.innerHTML = `<div class="msg-user-bubble text-white px-4 py-3 max-w-[80%] break-words">${sanitized}</div>`;
+    chatFeed.appendChild(messageEl);
+    this.chatHistory.push({ role: 'user', text: sanitized, timestamp: new Date() });
+    this.scrollToBottom();
+    return true;
+  }
+
+  addBotMessage(html, isHtml = true) {
+    const chatFeed = document.getElementById('chat-feed');
+    const messageEl = document.createElement('div');
+    messageEl.className = 'flex gap-3 message message-bot';
+    messageEl.innerHTML = `
+      <div class="h-10 w-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 text-white flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-robot"></i></div>
+      <div class="msg-bot-bubble p-4 max-w-[80%] break-words">
+        <p class="text-sm text-gray-700">${isHtml ? html : this.sanitize(html)}</p>
+      </div>
+    `;
+    chatFeed.appendChild(messageEl);
+    this.chatHistory.push({ role: 'bot', text: html, timestamp: new Date() });
+    this.scrollToBottom();
+  }
+
+  addCommentMessage(ticketId, text) {
+    const chatFeed = document.getElementById('chat-feed');
+    const messageEl = document.createElement('div');
+    messageEl.className = 'flex gap-3 message';
+    messageEl.innerHTML = `
+      <div class="h-10 w-10 rounded-full bg-green-500 text-white flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-comment"></i></div>
+      <div class="msg-comment p-4 max-w-[80%] break-words">
+        <p class="font-bold text-sm text-green-700">${ticketId}</p>
+        <p class="text-sm text-gray-700 mt-1">"${this.sanitize(text)}"</p>
+      </div>
+    `;
+    chatFeed.appendChild(messageEl);
+    this.scrollToBottom();
+  }
+
+  showTyping() {
+    document.getElementById('typing').classList.remove('hidden');
+    this.scrollToBottom();
+  }
+
+  hideTyping() {
+    document.getElementById('typing').classList.add('hidden');
+  }
+
+  scrollToBottom() {
+    const chatFeed = document.getElementById('chat-feed');
+    setTimeout(() => { chatFeed.scrollTop = chatFeed.scrollHeight; }, 50);
+  }
+
+  logAction(action) {
+    const historico = document.getElementById('historico');
+    if (!historico) return;
+    const div = document.createElement('div');
+    div.className = 'bg-slate-900 p-2 rounded text-slate-300 truncate text-xs border-l-2 border-blue-500';
+    div.textContent = `${new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })} ${action}`;
+    historico.insertBefore(div, historico.firstChild);
+    while (historico.children.length > 20) historico.removeChild(historico.lastChild);
+  }
+
+  getTicketStatus(ticketId) {
+    const ticket = this.tickets[ticketId];
+    if (!ticket) return `❌ Ticket ${ticketId} não encontrado.`;
+
+    const delayedText = ticket.delayed > 0 ? `<br>⚠️ <strong style="color:red">${ticket.delayed} dias atrasado</strong>` : '<br>✅ <strong style="color:green">No prazo</strong>';
+    const commentsHtml = ticket.comments.length > 0 ? `<br><br><strong>💬 Comentários:</strong><ul class="ml-4" style="margin-top:8px;list-style:disc;"><li>${ticket.comments.join('</li><li>')}</li></ul>` : '';
+
+    return `<strong>📌 ${ticketId}</strong><br><strong style="color:#0078d4">${ticket.desc}</strong><br>
+    Status: <strong>${ticket.status}</strong><br>
+    Responsável: <strong>${ticket.assignee}</strong><br>
+    Prioridade: <strong>${ticket.priority}</strong>${delayedText}${commentsHtml}`;
+  }
+
+  registerComment(ticketId, text) {
+    if (!this.tickets[ticketId]) return false;
+    this.tickets[ticketId].comments.push(text);
+    this.logAction(`💬 Comentário em ${ticketId}`);
+    return true;
+  }
+
+  // NLP AVANÇADO
+  processCommand(text) {
+    const lower = text.toLowerCase();
+    const quotedText = this.extractQuotedText(text);
+    const ticketId = this.extractTicketId(text);
+    const name = this.extractName(text);
+
+    // Comentário com aspas
+    if (quotedText && ticketId) {
+      if (this.registerComment(ticketId, quotedText)) {
+        return { type: 'comment', ticketId, text: quotedText };
+      }
+    }
+
+    // Perguntas sobre pessoa específica
+    if (/(?:tickets|tarefas|atribuído|de|para|do)\s+([a-záéíóú\s]+)/i.test(text) && name) {
+      const personTickets = Object.entries(this.tickets).filter(([_, t]) => t.assignee === name);
+      if (personTickets.length === 0) return { type: 'message', html: `❌ ${name} não tem tickets atribuídos.` };
+      return { type: 'message', html: `👤 <strong>${name}</strong> (${personTickets.length}):<br>${personTickets.map(([id, t]) => `• ${id} - ${t.status}`).join('<br>')}` };
+    }
+
+    // Meus tickets
+    if (/(?:meus|minhas|meu|minha)?\s*(?:tickets|tarefas|trabalho)/i.test(text)) {
+      const myTickets = Object.entries(this.tickets).filter(([_, t]) => t.assignee === 'Ana Silva');
+      return { type: 'message', html: `📌 <strong>Meus Tickets (${myTickets.length}):</strong><br>${myTickets.length === 0 ? 'Nenhum' : myTickets.map(([id, t]) => `• ${id} (${t.status})`).join('<br>')}` };
+    }
+
+    // Criar novo ticket
+    if (/(?:criar|novo|adicionar).*ticket/i.test(text)) {
+      return { type: 'action', action: 'showNewTicketForm' };
+    }
+
+    // Status ticket
+    if (ticketId) {
+      return { type: 'status', html: this.getTicketStatus(ticketId) };
+    }
+
+    // Atrasados
+    if (/atrasad|pendente|vencido|delayed|problema/i.test(lower)) {
+      const delayed = Object.entries(this.tickets).filter(([_, t]) => t.delayed > 0);
+      if (delayed.length === 0) return { type: 'message', html: '✅ Nenhum ticket atrasado!' };
+      return { type: 'message', html: `<strong>🚨 Tickets Atrasados (${delayed.length}):</strong><br>${delayed.map(([id, t]) => `<strong style="color:#ef4444">• ${id}</strong> → ${t.delayed}d atrasado (${t.assignee})`).join('<br>')}` };
+    }
+
+    // Resumo/Relatório
+    if (/resumo|sumário|relatório|stats|status|overview/i.test(lower)) {
+      const total = Object.keys(this.tickets).length;
+      const done = Object.values(this.tickets).filter(t => t.status === 'Done').length;
+      const inProgress = Object.values(this.tickets).filter(t => t.status === 'In Progress').length;
+      const todo = Object.values(this.tickets).filter(t => t.status === 'To Do').length;
+      return { type: 'message', html: `<strong>📊 Resumo do Projeto:</strong><br>📋 Total: <strong>${total}</strong><br>📈 Concluído: <strong>${done}</strong><br>⚙️ Em Progresso: <strong>${inProgress}</strong><br>📝 Pendente: <strong>${todo}</strong><br><br><strong style="color:#f59e0b">💡 Taxa: ${Math.round(done/total*100)}% Concluído</strong>` };
+    }
+
+    // Listar todos
+    if (/list|mostrar|trazer|exibir|todos|completo/i.test(lower)) {
+      const byStatus = { 'To Do': [], 'In Progress': [], 'Done': [] };
+      Object.entries(this.tickets).forEach(([id, t]) => byStatus[t.status].push(id));
+      return { type: 'message', html: `<strong>📋 Todos os Tickets:</strong><br><strong style="color:#ef4444">Pendente (${byStatus['To Do'].length}):</strong> ${byStatus['To Do'].join(', ')}<br><strong style="color:#0078d4">Progresso (${byStatus['In Progress'].length}):</strong> ${byStatus['In Progress'].join(', ')}<br><strong style="color:#10b981">Concluído (${byStatus['Done'].length}):</strong> ${byStatus['Done'].join(', ')}` };
+    }
+
+    // Prioridades altas
+    if (/alta?\s*(?:prioridade|priority)/i.test(text)) {
+      const high = Object.entries(this.tickets).filter(([_, t]) => t.priority === 'Alta');
+      return { type: 'message', html: `<strong>🔴 Prioridade Alta (${high.length}):</strong><br>${high.map(([id, t]) => `• ${id} (${t.assignee})`).join('<br>')}` };
+    }
+
+    return null;
+  }
+
+  enviarMensagem(event) {
+    event.preventDefault();
+    const input = document.getElementById('input');
+    const text = input.value.trim();
+
+    if (!this.validateInput(text)) return;
+
+    this.addUserMessage(text);
+    input.value = '';
+
+    this.showTyping();
+    const delay = Math.random() * (CONFIG.TYPING_DELAY_MAX - CONFIG.TYPING_DELAY_MIN) + CONFIG.TYPING_DELAY_MIN;
+
+    setTimeout(() => {
+      this.hideTyping();
+      const result = this.processCommand(text);
+
+      if (result) {
+        if (result.type === 'comment') {
+          this.addCommentMessage(result.ticketId, result.text);
+          this.addBotMessage(`✅ <strong>Comentário registrado em ${result.ticketId}!</strong><br>Todos foram notificados.`);
+        } else if (result.type === 'status' || result.type === 'message') {
+          this.addBotMessage(result.html);
+        } else if (result.type === 'action') {
+          if (result.action === 'showNewTicketForm') this.showNewTicketForm();
+        }
+      } else {
+        this.addBotMessage('🤖 Entendi assim: você pode tentar: "Meus tickets", "Tickets do João", "Criar novo", "Atrasados", "Status PROJ-101", ou "Resumo geral"');
+      }
+    }, delay);
+  }
+
+  selectTicket(ticketId) {
+    this.selectedTicket = ticketId;
+    const response = this.getTicketStatus(ticketId);
+    this.addBotMessage(response);
+  }
+
+  resumoDiario() {
+    const input = document.getElementById('input');
+    input.value = 'Resumo';
+    this.enviarMensagem({ preventDefault: () => {} });
+  }
+
+  exportarRelatorio() {
+    this.logAction('📥 Relatório exportado');
+    this.addBotMessage('📊 Relatório PDF gerado com sucesso! Download iniciado...');
+  }
+
+  notificacoes() {
+    this.logAction('🔔 Notificações consultadas');
+    const delayed = Object.entries(this.tickets).filter(([_, t]) => t.delayed > 0).length;
+    this.addBotMessage(`🔔 <strong>Você tem ${delayed} alertas:</strong><br>⚠️ ${delayed} tickets atrasados<br>Verifique o dashboard para detalhes.`);
+  }
+
+  toggleSearch() {
+    const box = document.getElementById('search-box');
+    box.classList.toggle('hidden');
+    if (!box.classList.contains('hidden')) document.getElementById('search-input').focus();
+  }
+
+  switchTab(tab) {
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+    document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+    document.getElementById('tab-' + tab)?.classList.remove('hidden');
+    event.target?.classList.add('active');
+    this.logAction(`📂 Abriu aba ${tab}`);
+  }
+
+  clearChat() {
+    if (!confirm('Limpar chat? Esta ação não pode ser desfeita.')) return;
+    document.getElementById('chat-feed').innerHTML = '';
+    this.chatHistory = [];
+    this.addBotMessage('Chat limpo! ✅');
+    this.logAction('🗑️ Chat limpo');
+  }
+
+  toggleTheme() {
+    const html = document.documentElement;
+    const isDark = html.classList.contains('dark');
+    isDark ? html.classList.remove('dark') : html.classList.add('dark');
+    localStorage.setItem('theme', isDark ? 'light' : 'dark');
+  }
+
+  filterTickets(type, value) {
+    if (!value) return;
+    this.logAction(`🔍 Filtro ${type}: ${value}`);
+  }
+}
+
+const app = new JiraAssistant();
+window.app = app;
+
+document.addEventListener('DOMContentLoaded', () => {
+  const form = document.querySelector('form');
+  if (form) form.addEventListener('submit', (e) => app.enviarMensagem(e));
+});
+
+</script>
+
+</body>
+</html>
