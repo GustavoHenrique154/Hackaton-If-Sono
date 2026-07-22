@@ -1,0 +1,1 @@
+Projeto desenvolvido durante o meu primeiro hackathon. Em equipe, criamos uma solução que integra um chatbot ao Microsoft Teams, permitindo o envio e o recebimento de informações da plataforma Jira por meio de comandos executados diretamente no chat.
